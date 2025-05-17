@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NZXT Kraken 3D Visualizer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at center, #000 0%, #111 100%);
+      overflow: hidden;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .tile {
+      position: absolute;
+      padding: 15px 20px;
+      color: #fff;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      animation: float 6s infinite ease-in-out;
+    }
+
+    .tile:hover {
+      transform: perspective(300px) rotateX(8deg) rotateY(8deg) scale(1.05);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.9);
+    }
+
+    @keyframes float {
+      0%   { transform: translateY(0px); }
+      50%  { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+  </style>
+</head>
+<body>
+  <script type="module">
+    const createTile = (id, label, value, unit, color = "rgba(0,255,180,0.9)") => {
+      let tile = document.getElementById(id);
+      if (!tile) {
+        tile = document.createElement("div");
+        tile.id = id;
+        tile.className = "tile";
+        tile.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
+        tile.style.left = `${Math.random() * (window.innerWidth - 200)}px`;
+        tile.style.background = color;
+        tile.style.animationDelay = `${Math.random() * 5}s`;
+        document.body.appendChild(tile);
+      }
+      tile.textContent = `${label}: ${value}${unit}`;
+    };
+
+    window.nzxt = window.nzxt || {};
+    window.nzxt.v1 = {
+      onMonitoringDataUpdate: (data) => {
+        const { cpus, gpus, ram, kraken } = data;
+
+        if (cpus[0]) {
+          createTile("cpuTemp", "CPU Temp", cpus[0].temperature, "°C", "linear-gradient(45deg, #ff416c, #ff4b2b)");
+          createTile("cpuLoad", "CPU Load", cpus[0].load, "%", "linear-gradient(45deg, #ff9966, #ff5e62)");
+        }
+
+        if (gpus[0]) {
+          createTile("gpuTemp", "GPU Temp", gpus[0].temperature, "°C", "linear-gradient(45deg, #36d1dc, #5b86e5)");
+          createTile("gpuLoad", "GPU Load", gpus[0].load, "%", "linear-gradient(45deg, #667eea, #764ba2)");
+        }
+
+        createTile("ramUsage", "RAM Used", ram.usedMiB, "MiB", "linear-gradient(45deg, #c471f5, #fa71cd)");
+
+        if (kraken) {
+          createTile("pumpRPM", "Pump RPM", kraken.pumpRpm, " RPM", "linear-gradient(45deg, #f7971e, #ffd200)");
+          createTile("liquidTemp", "Liquid Temp", kraken.liquidTemperature, "°C", "linear-gradient(45deg, #00c6ff, #0072ff)");
+        }
+      }
+    };
+  </script>
+</body>
+</html>
